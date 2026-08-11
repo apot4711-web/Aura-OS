@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2034
 
-iso_name="archlinux"
-iso_label="ARCH_$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y%m)"
-iso_publisher="Arch Linux <https://archlinux.org>"
-iso_application="Arch Linux Live/Rescue DVD"
+iso_name="mrdos"
+iso_label="MRDOS_$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y%m)"
+iso_publisher="Mrd-OS <https://github.com/apot4711-web/Mrd-OS>"
+iso_application="Mrd-OS Live/Rescue System"
 iso_version="$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y.%m.%d)"
-install_dir="arch"
+install_dir="mrdos"
 buildmodes=('iso')
-bootmodes=('bios.syslinux'
-           'uefi.systemd-boot')
+bootmodes=('bios.syslinux.mbr'
+           'bios.syslinux.eltorito'
+           'uefi-x64.systemd-boot.esp'
+           'uefi-x64.systemd-boot.eltorito')
 pacman_conf="pacman.conf"
 airootfs_image_type="squashfs"
 airootfs_image_tool_options=('-comp' 'xz' '-Xbcj' 'x86' '-b' '1M' '-Xdict-size' '1M')
