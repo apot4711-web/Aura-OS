@@ -4,20 +4,12 @@ mrd os هي توزيعة مبنية على ارش لينكس (Arch Linux) باس
 ---
 
 ## كيف تبني التوزيعة بنفسك؟
-اذا عندك نظام لينكس (اي توزيعة)، تقدر تبني ملف ISO الخاص بـ Mrd-OS بهذه الخطوات:
+اذا عندك نظام ارش لينكس-Arch Linux (فقط)، تقدر تبني ملف ISO الخاص بـ Mrd-OS بهذه الخطوات:
 
 ### 1. ثبت ادوات البناء
 **على Arch Linux:**
 ```bash
 sudo pacman -S archiso
-```
-**على Fedora:**
-```bash
-sudo dnf install archiso
-```
-**على Ubuntu / Debian:**
-```bash
-sudo apt install archiso
 ```
 
 ---
