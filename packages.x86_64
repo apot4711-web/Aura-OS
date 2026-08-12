@@ -131,3 +131,8 @@ xl2tpd
 zsh
 konsole
 noto-fonts
+plasma-meta
+kde-applications-meta
+sddm
+wayland
+xorg-server
