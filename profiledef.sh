@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2034
 
-iso_name="mrdos"
-iso_label="MRDOS_$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y%m)"
-iso_publisher="Mrd-OS <https://github.com/apot4711-web/Mrd-OS>"
-iso_application="Mrd-OS Live/Rescue System"
+iso_name="auraos"
+iso_label="AURAOS_$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y%m)"
+iso_publisher="Aura-OS <https://github.com/apot4711-web/Mrd-OS>"
+iso_application="Aura-OS Live/Rescue System"
 iso_version="$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y.%m.%d)"
-install_dir="mrdos"
+install_dir="auraos"
 buildmodes=('iso')
 bootmodes=('bios.syslinux.mbr'
            'bios.syslinux.eltorito'
