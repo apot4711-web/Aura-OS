@@ -16,11 +16,11 @@ sudo pacman -S archiso
 
 ### تحميل الكود المصدري
 ```bash
-git clone https://github.com/apot4711-web/Mrd-OS.git
+git clone https://github.com/apot4711-web/Aura-OS.git
 ```
 ### افتح الملف وابدا البناء
 ```bash
-cd Mrd-OS
+cd Aura-OS
 ```
 **ابدأ البناء**
 ```bash
