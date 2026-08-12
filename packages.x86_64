@@ -131,6 +131,9 @@ xl2tpd
 zsh
 konsole
 noto-fonts
+noto-fonts-arabic
+noto-fonts-extra
+ttf-dejavu
 plasma-desktop
 plasma-workspace
 sddm
