@@ -2,10 +2,10 @@
 # shellcheck disable=SC2034
 
 iso_name="auraos"
-iso_label="AURAOS_$(date --date="${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y%m)"
+iso_label="AURAOS_$(date +%Y%m)"
 iso_publisher="Aura-OS <https://github.com/apot4711-web/Aura-OS>"
 iso_application="Aura-OS Live/Rescue System"
-iso_version="$(date --date="${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y.%m.%d)"
+iso_version="$(date +%Y.%m.%d)"
 install_dir="auras"
 buildmodes=('iso')
 bootmodes=(
