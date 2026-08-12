@@ -9,10 +9,8 @@ iso_version="$(date +%Y.%m.%d)"
 install_dir="auras"
 buildmodes=('iso')
 bootmodes=(
-    'bios.syslinux.mbr'
-    'bios.syslinux.eltorito'
-    'uefi-x64.systemd-boot.esp'
-    'uefi-x64.systemd-boot.eltorito'
+    'bios.syslinux'
+    'uefi.systemd-boot'
 )
 
 pacman_conf="pacman.conf"
