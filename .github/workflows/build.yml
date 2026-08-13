@@ -18,16 +18,21 @@ jobs:
 
       - name: Build ISO inside Arch Container
         run: |
-          # 1. تحديث النظام وتثبيت الحزم المطلوبة
-          pacman -Syu --noconfirm archiso python python-pip tk
+          # 1. إصلاح أذونات Git داخل الحاوية
+          git config --global --add safe.directory "*"
 
-          # 2. معرفة إصدار البايثون وتثبيت المكتبات داخل airootfs
+          # 2. تهيئة وتحديث مفاتيح pacman لتفادي أخطاء التوقيع
+          pacman-key --init
+          pacman-key --populate archlinux
+          pacman -Syu --noconfirm archiso python python-pip tk git
+
+          # 3. معرفة إصدار البايثون وتثبيت المكتبات داخل airootfs
           PY_VER=$(python3 -c "import sys; print(f'python{sys.version_info.major}.{sys.version_info.minor}')")
           pip install customtkinter arabic-reshaper python-bidi \
             --target=airootfs/usr/lib/$PY_VER/site-packages/ \
             --break-system-packages
 
-          # 3. بناء ملف الـ ISO
+          # 4. بناء ملف الـ ISO
           mkarchiso -v -w work/ -o out/ .
 
       - name: Upload ISO Artifact
