@@ -26,5 +26,7 @@ file_permissions=(
     ["/usr/local/bin/choose-mirror"]="0:0:0:755"
     ["/usr/local/bin/Installation_guide"]="0:0:0:755"
     ["/usr/local/bin/livecd-sound"]="0:0:0:755"
-    ["/usr/bin/aura-welcome"]="0:0:755"
+    ["/usr/local/bin/aura-welcome.py"]="0:0:0:755"
+    ["/etc/skel/.config/autostart/aura-welcome.desktop"]="0:0:0:644"
+    ["/root/customize_airootfs.sh"]="0:0:0:755"
 )
