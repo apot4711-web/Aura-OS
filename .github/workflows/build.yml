@@ -4,7 +4,9 @@ on:
   push:
     branches: [ main ]
     paths:
-      - "Aura-OS/**"
+      - "airootfs/**"
+      - "packages.x86_64"
+      - "profiledef.sh"
       - ".github/workflows/build.yml"
   workflow_dispatch: {}
 
@@ -33,7 +35,6 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Sanity-check required files exist
-        working-directory: Aura-OS
         run: |
           test -f airootfs/usr/local/bin/aura-welcome.py || { echo "::error::aura-welcome.py not found"; exit 1; }
           mkdir -p airootfs/etc/skel/.config/autostart
@@ -52,7 +53,6 @@ jobs:
           chmod +x airootfs/usr/local/bin/aura-welcome.py
 
       - name: Ensure required pacman packages are declared
-        working-directory: Aura-OS
         run: |
           touch packages.x86_64
           for pkg in \
@@ -69,7 +69,6 @@ jobs:
           done
 
       - name: Inject post-install hook for Python (pip) dependencies
-        working-directory: Aura-OS
         run: |
           mkdir -p airootfs/root/customize_airootfs.d
           cat > airootfs/root/customize_airootfs.sh <<'EOF'
@@ -86,7 +85,6 @@ jobs:
           chmod +x airootfs/root/customize_airootfs.sh
 
       - name: Build ISO with mkarchiso
-        working-directory: Aura-OS
         run: |
           mkdir -p work out
           mkarchiso -v -w work/ -o out/ .
@@ -95,5 +93,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: AuraOS-x86_64-iso
-          path: Aura-OS/out/*.iso
+          path: out/*.iso
           if-no-files-found: error
