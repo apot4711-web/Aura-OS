@@ -1,42 +1,71 @@
-name: Build Aura OS ISO
+name: Build AuraOS ISO
 
 on:
+  workflow_dispatch: # يتيح لك تشغيل البناء يدوياً من GitHub
   push:
-    branches: [ main ]
-  workflow_dispatch:
+    branches:
+      - main # يتم البناء تلقائياً عند الدفع لفرع main
 
 jobs:
   build-iso:
     runs-on: ubuntu-latest
     container:
       image: archlinux:latest
-      options: --privileged
+      # ضروري جداً لتشغيل archiso والسماح بتركيب (Mount) الملفات الوهمية
+      options: --privileged 
 
     steps:
-      - name: Checkout Code
+      - name: Checkout aura-welcome Repository
         uses: actions/checkout@v4
+        with:
+          path: aura-welcome # جلب المستودع الخاص بالترحيب
 
-      - name: Build ISO inside Arch Container
+      - name: Update System & Install Build Tools
         run: |
-          # 1. إصلاح أذونات Git داخل الحاوية
-          git config --global --add safe.directory "*"
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm archiso git base-devel python python-pip
 
-          # 2. تهيئة وتحديث مفاتيح pacman لتفادي أخطاء التوقيع
-          pacman-key --init
-          pacman-key --populate archlinux
-          pacman -Syu --noconfirm archiso python python-pip tk git
+      - name: Setup Archiso Profile
+        run: |
+          # نسخ القالب الافتراضي لـ archiso لبناء التوزيعة
+          cp -r /usr/share/archiso/configs/releng ./auraos-profile
+          
+          # إضافة الحزم الأساسية التي يتطلبها سكربت الترحيب داخل ملف الحزم
+          cat <<EOF >> ./auraos-profile/packages.x86_64
+          python
+          python-pip
+          noto-fonts # لدعم خط Noto Sans Arabic
+          ttf-liberation # كبديل قياسي لدعم خط Arial
+          discover # لدعم فتح مركز التطبيقات plasma-discover
+          EOF
 
-          # 3. معرفة إصدار البايثون وتثبيت المكتبات داخل airootfs
-          PY_VER=$(python3 -c "import sys; print(f'python{sys.version_info.major}.{sys.version_info.minor}')")
-          pip install customtkinter arabic-reshaper python-bidi \
-            --target=airootfs/usr/lib/$PY_VER/site-packages/ \
-            --break-system-packages
+      - name: Inject aura-welcome Script into ISO
+        run: |
+          # إنشاء مسار البرنامج داخل النظام المستقبلي (ISO)
+          mkdir -p ./auraos-profile/airootfs/opt/aura-welcome
+          
+          # نسخ ملفات المستودع بالكامل إلى النظام الوهمي
+          cp -r ./aura-welcome/* ./auraos-profile/airootfs/opt/aura-welcome/
+          
+          # إعطاء صلاحية التنفيذ للسكربت
+          chmod +x ./auraos-profile/airootfs/opt/aura-welcome/*.py
 
-          # 4. بناء ملف الـ ISO
-          mkarchiso -v -w work/ -o out/ .
+      - name: Configure dependencies installation inside ISO
+        run: |
+          # إضافة أمر تثبيت مكتبات بايثون المطلوبة داخل سكربت التهيئة الخاص بـ archiso
+          # يتم إضافة --break-system-packages لضمان التثبيت على مستوى النظام الأساسي
+          echo 'pip install customtkinter arabic-reshaper python-bidi --break-system-packages' >> ./auraos-profile/airootfs/root/customize_airootfs.sh
+          
+          # التأكد من قابلية تشغيل ملف التهيئة
+          chmod +x ./auraos-profile/airootfs/root/customize_airootfs.sh
+
+      - name: Build AuraOS ISO
+        run: |
+          # بدء عملية بناء التوزيعة
+          mkarchiso -v -w /tmp/archiso-tmp -o ./out ./auraos-profile
 
       - name: Upload ISO Artifact
         uses: actions/upload-artifact@v4
         with:
           name: AuraOS-ISO
-          path: out/*.iso
+          path: ./out/*.iso
