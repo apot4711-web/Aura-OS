@@ -2,7 +2,7 @@
 Type=Application
 Name=Aura OS Welcome
 Comment=Welcome Screen for Aura OS
-Exec=/usr/bin/aura-welcome
+Exec=python3 /usr/local/bin/aura-welcome
 Icon=preferences-system
 Terminal=false
 Categories=System;
