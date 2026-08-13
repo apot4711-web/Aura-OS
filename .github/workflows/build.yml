@@ -63,7 +63,7 @@ jobs:
             noto-fonts \
             noto-fonts-cjk \
             noto-fonts-emoji \
-            plasma-discover \
+            discover \
             xdg-utils; do
             grep -qxF "$pkg" packages.x86_64 || echo "$pkg" >> packages.x86_64
           done
