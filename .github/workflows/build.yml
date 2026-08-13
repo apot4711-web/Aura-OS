@@ -8,20 +8,27 @@ on:
 jobs:
   build-iso:
     runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+      options: --privileged
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Run in Arch Linux Container
-        uses: archlinux/archlinux:latest
-        with:
-          exec: |
-            pacman -Syu --noconfirm archiso python python-pip tk
-            PY_VER=$(python3 -c "import sys; print(f'python{sys.version_info.major}.{sys.version_info.minor}')")
-            pip install customtkinter arabic-reshaper python-bidi \
-              --target=airootfs/usr/lib/$PY_VER/site-packages/ \
-              --break-system-packages
-            mkarchiso -v -w work/ -o out/ .
+      - name: Build ISO inside Arch Container
+        run: |
+          # 1. تحديث النظام وتثبيت الحزم المطلوبة
+          pacman -Syu --noconfirm archiso python python-pip tk
+
+          # 2. معرفة إصدار البايثون وتثبيت المكتبات داخل airootfs
+          PY_VER=$(python3 -c "import sys; print(f'python{sys.version_info.major}.{sys.version_info.minor}')")
+          pip install customtkinter arabic-reshaper python-bidi \
+            --target=airootfs/usr/lib/$PY_VER/site-packages/ \
+            --break-system-packages
+
+          # 3. بناء ملف الـ ISO
+          mkarchiso -v -w work/ -o out/ .
 
       - name: Upload ISO Artifact
         uses: actions/upload-artifact@v4
