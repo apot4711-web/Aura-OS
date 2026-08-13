@@ -1,71 +1,99 @@
 name: Build AuraOS ISO
 
 on:
-  workflow_dispatch: # يتيح لك تشغيل البناء يدوياً من GitHub
   push:
-    branches:
-      - main # يتم البناء تلقائياً عند الدفع لفرع main
+    branches: [ main ]
+    paths:
+      - "Aura-OS/**"
+      - ".github/workflows/build.yml"
+  workflow_dispatch: {}
 
 jobs:
   build-iso:
+    name: Build AuraOS ISO (x86_64)
     runs-on: ubuntu-latest
     container:
       image: archlinux:latest
-      # ضروري جداً لتشغيل archiso والسماح بتركيب (Mount) الملفات الوهمية
-      options: --privileged 
+      options: --privileged
 
     steps:
-      - name: Checkout aura-welcome Repository
-        uses: actions/checkout@v4
-        with:
-          path: aura-welcome # جلب المستودع الخاص بالترحيب
-
-      - name: Update System & Install Build Tools
+      - name: Update system & install build tools
         run: |
           pacman -Syu --noconfirm
-          pacman -S --noconfirm archiso git base-devel python python-pip
+          pacman -S --noconfirm --needed \
+            archiso \
+            git \
+            base-devel \
+            reflector \
+            dosfstools \
+            squashfs-tools \
+            libisoburn
 
-      - name: Setup Archiso Profile
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Sanity-check required files exist
+        working-directory: Aura-OS
         run: |
-          # نسخ القالب الافتراضي لـ archiso لبناء التوزيعة
-          cp -r /usr/share/archiso/configs/releng ./auraos-profile
-          
-          # إضافة الحزم الأساسية التي يتطلبها سكربت الترحيب داخل ملف الحزم
-          cat <<EOF >> ./auraos-profile/packages.x86_64
-          python
-          python-pip
-          noto-fonts # لدعم خط Noto Sans Arabic
-          ttf-liberation # كبديل قياسي لدعم خط Arial
-          discover # لدعم فتح مركز التطبيقات plasma-discover
+          test -f airootfs/usr/local/bin/aura-welcome.py || { echo "::error::aura-welcome.py not found"; exit 1; }
+          mkdir -p airootfs/etc/skel/.config/autostart
+          if [ ! -f airootfs/etc/skel/.config/autostart/aura-welcome.desktop ]; then
+            echo "::warning::autostart .desktop entry missing, generating a default one"
+            cat > airootfs/etc/skel/.config/autostart/aura-welcome.desktop <<'EOF'
+          [Desktop Entry]
+          Type=Application
+          Name=Aura Welcome
+          Exec=python3 /usr/local/bin/aura-welcome.py
+          Icon=system-software-install
+          Terminal=false
+          X-GNOME-Autostart-enabled=true
           EOF
+          fi
+          chmod +x airootfs/usr/local/bin/aura-welcome.py
 
-      - name: Inject aura-welcome Script into ISO
+      - name: Ensure required pacman packages are declared
+        working-directory: Aura-OS
         run: |
-          # إنشاء مسار البرنامج داخل النظام المستقبلي (ISO)
-          mkdir -p ./auraos-profile/airootfs/opt/aura-welcome
-          
-          # نسخ ملفات المستودع بالكامل إلى النظام الوهمي
-          cp -r ./aura-welcome/* ./auraos-profile/airootfs/opt/aura-welcome/
-          
-          # إعطاء صلاحية التنفيذ للسكربت
-          chmod +x ./auraos-profile/airootfs/opt/aura-welcome/*.py
+          touch packages.x86_64
+          for pkg in \
+            python \
+            python-pip \
+            tk \
+            ttf-dejavu \
+            noto-fonts \
+            noto-fonts-cjk \
+            noto-fonts-emoji \
+            plasma-discover \
+            xdg-utils; do
+            grep -qxF "$pkg" packages.x86_64 || echo "$pkg" >> packages.x86_64
+          done
 
-      - name: Configure dependencies installation inside ISO
+      - name: Inject post-install hook for Python (pip) dependencies
+        working-directory: Aura-OS
         run: |
-          # إضافة أمر تثبيت مكتبات بايثون المطلوبة داخل سكربت التهيئة الخاص بـ archiso
-          # يتم إضافة --break-system-packages لضمان التثبيت على مستوى النظام الأساسي
-          echo 'pip install customtkinter arabic-reshaper python-bidi --break-system-packages' >> ./auraos-profile/airootfs/root/customize_airootfs.sh
-          
-          # التأكد من قابلية تشغيل ملف التهيئة
-          chmod +x ./auraos-profile/airootfs/root/customize_airootfs.sh
+          mkdir -p airootfs/root/customize_airootfs.d
+          cat > airootfs/root/customize_airootfs.sh <<'EOF'
+          #!/usr/bin/env bash
+          set -e
+          # Install the PyPI libraries aura-welcome.py needs that aren't
+          # available as official Arch packages.
+          pip install --break-system-packages --no-cache-dir \
+            customtkinter \
+            arabic_reshaper \
+            python-bidi
+          chmod +x /usr/local/bin/aura-welcome.py
+          EOF
+          chmod +x airootfs/root/customize_airootfs.sh
 
-      - name: Build AuraOS ISO
+      - name: Build ISO with mkarchiso
+        working-directory: Aura-OS
         run: |
-          # بدء عملية بناء التوزيعة
-          mkarchiso -v -w /tmp/archiso-tmp -o ./out ./auraos-profile
+          mkdir -p work out
+          mkarchiso -v -w work/ -o out/ .
 
-      - name: Upload ISO Artifact
+      - name: Upload ISO artifact
         uses: actions/upload-artifact@v4
         with:
-          name: AuraOS-ISO
-          path: ./out/*.iso
+          name: AuraOS-x86_64-iso
+          path: Aura-OS/out/*.iso
+          if-no-files-found: error
