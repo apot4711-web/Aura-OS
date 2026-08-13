@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Aura OS Welcome
+Comment=Welcome Screen for Aura OS
+Exec=/usr/bin/aura-welcome
+Icon=preferences-system
+Terminal=false
+Categories=System;
+X-KDE-autostart-after=panel
