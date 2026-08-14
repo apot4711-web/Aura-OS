@@ -29,4 +29,5 @@ file_permissions=(
     ["/usr/local/bin/aura-welcome.py"]="0:0:0:755"
     ["/etc/skel/.config/autostart/aura-welcome.desktop"]="0:0:0:644"
     ["/root/customize_airootfs.sh"]="0:0:0:755"
+    ["/root/.config/autostart/aura-welcome.desktop"]="0:0:0:644"
 )
