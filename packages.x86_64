@@ -90,6 +90,7 @@ partclone
 parted
 partimage
 python
+python-pip
 tk
 pcsclite
 ppp
