@@ -16,7 +16,7 @@ sudo pacman -S archiso
 
 ### تحميل الكود المصدري
 ```bash
-git clone https://github.com/h444444dev/Aura-OS.git
+git clone https://github.com/h44-aura-dev/Aura-OS.git
 ```
 ### افتح الملف وابدا البناء
 ```bash
